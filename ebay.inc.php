@@ -7,6 +7,7 @@ class ebay {
 	private $client;
 	private $username;
 	private $token;
+	private $url = 'http://svcs.sandbox.ebay.com/services/search/FindingService/v1';
 	
 	function __construct($app_id, $dev_id, $cert_id, $username, $token, $country) {
 
@@ -16,6 +17,10 @@ class ebay {
 		$this->cert_id = $cert_id;
 		$this->username = $username;
 		$this->token = $token;
+		$this->version = '1.0.0';
+		$this->format = 'json';
+
+		/*
 
 		$wsdl_url = 'http://developer.ebay.com/webservices/latest/ebaySvc.wsdl';
 
@@ -34,28 +39,37 @@ class ebay {
 		$header_body = new SoapVar($eBayAuth, SOAP_ENC_OBJECT);
 		$this->header = array(new SOAPHeader('urn:ebay:apis:eBLBaseComponents', 'RequesterCredentials', $header_body));
 
+		*/
+
 	}
 
+	public function findItems($keyword = '', $limit = 2) {
+		$url = $this->url
+			.'?operation-name=findItemsByKeywords'
+			.'&service-version='.$this->version
+			.'&keywords='.urlencode($keyword)
+			."&paginationInput.entriesPerPage=$limit"
+			.'&security-appname='. $this->app_id
+			.'&response-data-format=' . $this->format
+		;
+
+		return json_decode(file_get_contents($url), true);
+	}
+
+/*
 	function call($function, $params) {
 		$this->client->__setLocation("https://api.sandbox.ebay.com/wsapi?callname=$function&appid={$this->app_id}&siteid={$this->global_id}&version=803&Routing=new");
 		return $this->client->__soapCall($function, array($params), NULL, $this->header);
 	}
 
-	function test() {
-		$data = array(
-			'Version' => 803,
-			'DetailLevel' => 'ReturnSummary',
-			'keywords' => 'banana',
-			'UserID' => $this->username, 
-		);
-		$call = 'findItemsByKeyword';
-		$res = $this->call('getUser', $data);
-
-		var_dump($res);
-		/*
-		$req = $this->client->__getLastRequest();
-		echo preg_replace('!>!', ">\n", $req);
-// */
+	function call_find($function, $params) {
+		$this->client->__setLocation("http://svcs.sandbox.ebay.com/services/search/FindingService/v1?callname=$function&appid={$this->app_id}&siteid={$this->global_id}&version=803&Routing=new");
+		return $this->client->__soapCall($function, array($params), NULL, $this->header);
 	}
 
+	function test() {
+		$res = $this->findItems('banana');
+		var_dump($res);
+	}
+*/
 }
